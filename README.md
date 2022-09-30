@@ -28,7 +28,7 @@ Assuming the DisEqC adaptor is `/dev/ttyUSB0`
 
 ## Run
 run: `python3 main.py`
-Instructions will apear on screen
+Instructions will appear on screen
 * Rotor returns to start position, press enter when rotor has returned
-* NanoVNA will start continuous measruements and rotor will step 1 degree per measureemnt
+* NanoVNA will start continuous measurements and rotor will step 1 degree per measurement
 * After completing a 120 Degrees arc the resulting antenna diagram will be displayed on screen
