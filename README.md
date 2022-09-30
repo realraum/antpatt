@@ -1,6 +1,6 @@
 # Antenna Diagram with NanoVNA and DiSEqC-Rotor
 
-Very quick+dirty hack that combine two existing Projects to create an antenna radiation diagram
+Very quick+dirty hack that combine two existing Projects to create an antenna radiation pattern
 
 1. Easy DiSEqC: https://www.e-callisto.org/hardware/callisto-hardware.html
 2. NanoVNA-Saver (commandline version): https://github.com/spel-oe/nanovna-saver
