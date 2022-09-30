@@ -31,7 +31,10 @@ run: `python3 main.py`
 Instructions will appear on screen
 * Rotor returns to start position, press enter when rotor has returned
 * NanoVNA will start continuous measurements and rotor will step 1 degree per measurement
-* After completing a 120 Degrees arc the resulting antenna diagram will be displayed on screen
+* After completing a 150 degree arc the resulting antenna diagram will be displayed on screen
 
 run: `python3 show-plot.py xxxdatetime.diagram`
 Show the previous measurements
+![Screenshot from 2022-09-30 00-35-06](https://user-images.githubusercontent.com/53058231/193336436-fb546d05-395a-49b8-9bd2-a1e6c3826045.png)
+
+
