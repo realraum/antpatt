@@ -1,12 +1,16 @@
 import serial
 import time
 
+class RotorDegreeOutOfRange(Exception):
+    pass
+
 class Rotor:
 
     serial_port = ""
     _rotor_port = None
 
-    MaxRange  = 75 # (+/- value) depends on your SAT-rotor type, check data sheet
+    MaxRange_azi  = 75 # (+/- value) depends on your SAT-rotor type, check data sheet
+    MaxRange_ele = 75 
 
     _current_azi = 0
     _current_ele = 0
@@ -27,16 +31,17 @@ class Rotor:
         #endtry
         time.sleep(2) # wait for arduino to be initialized
         self._send_command("-h")
-        self._send_command(f"max{self.MaxRange}")
+        self._send_command(f"max{self.MaxRange_azi}") # TODO: what if max range ele is smaller / bigger than azi ?
     #enddef
 
     def goto_azimuth(self, azi):
-        if (abs(azi)<=self.MaxRange):
+        if self._can_move_azimuth(azi):
             cmd = "azi{:6.2f}".format(azi)
             self._send_command(cmd)
             self._current_azi = azi
         else:
-            print("ERROR: azimuth out of range")
+            print("WARN: azimuth out of range")
+            raise RotorDegreeOutOfRange
         #enddef
     #enddef
 
@@ -49,8 +54,8 @@ class Rotor:
         return self._current_azi
     #enddef
 
-    def can_move_azimuth(self, dir=1):
-        if self._current_azi+dir <= self.MaxRange:
+    def _can_move_azimuth(self, new_azi):
+        if abs(new_azi) < self.MaxRange_azi:
             return True
         else:
             return False
@@ -58,12 +63,13 @@ class Rotor:
     #enddef
 
     def goto_elevation(self, ele):
-        if (abs(ele)<=self.MaxRange):
+        if self._can_move_elevation(ele):
             cmd = "ele{:6.2f}".format(ele)
             self._send_command(cmd)
             self._current_ele=ele
         else:
-            print("ERROR: elevation out of range")
+            print("WARN: elevation out of range")
+            raise RotorDegreeOutOfRange
     #enddef
 
     def step_elevation(self, step=1):
@@ -73,6 +79,14 @@ class Rotor:
 
     def get_elevation(self):
         return self._current_ele
+    #enddef
+
+    def _can_move_elevation(self, new_ele):
+        if abs(new_azi) < self.MaxRange_ele:
+            return True
+        else:
+            return False
+        #endif
     #enddef
 
     def _send_command(self, cmd):
@@ -88,5 +102,6 @@ class Rotor:
 
 
     def __del__(self):
-        self._rotor_port.close()
+        if self._rotor_port:
+            self._rotor_port.close()
     #enddef

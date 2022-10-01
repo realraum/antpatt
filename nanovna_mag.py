@@ -1,4 +1,4 @@
-from rotor import Rotor
+from rotor import *
 import time
 
 import os
@@ -26,12 +26,14 @@ class nanovna_mag(FileSystemEventHandler):
 
     _proc = 0
     _rotor = None
+    _rotor_step = 1
     _continue_event = None
     antenna_diagram = []
 
-    def __init__(self, rotor):
+    def __init__(self, rotor, rotor_step):
         # get rotor from main
         self._rotor = rotor
+        self._rotor_step = rotor_step
 
         #init fs
         try:
@@ -65,7 +67,6 @@ class nanovna_mag(FileSystemEventHandler):
 
     def on_created(self, event):
         #print("on_created", event.src_path)
-        self._rotor.step_azimuth()
 
         mag_array = []
 
@@ -99,9 +100,18 @@ class nanovna_mag(FileSystemEventHandler):
         print(f"{az} {avg}")
         self.antenna_diagram.append([az, avg])
 
-        if not self._rotor.can_move_azimuth():
+        #if not self._rotor.can_move_azimuth(self._rotor_step):
+        #    print("Rotor at end, stopping")
+        #    self._continue_event.set()
+        #else:
+        #    self._rotor.step_azimuth(self._rotor_step)
+        #endif
+        try:
+            self._rotor.step_azimuth(self._rotor_step)
+        except RotorDegreeOutOfRange:
             print("Rotor at end, stopping")
             self._continue_event.set()
+        #endtry
     #enddef
 
     def wait_for_continue(self):
