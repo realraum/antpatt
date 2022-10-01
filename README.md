@@ -12,6 +12,8 @@ Very quick+dirty hack that combine two existing Projects to create an antenna ra
 - [ ] Explain purpose better in readme
 - [ ] Commit changes made to nanovna-saver (Tempfile + capture rate slow down)
 - [ ] Tidy up main.py + make OOP better
+- [ ] Use reference pattern
+- [ ] Measurement in both rotor directions to save retracting the rotor
 <hr>
 
 ## Dependencies:
