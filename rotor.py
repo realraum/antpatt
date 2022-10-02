@@ -16,7 +16,16 @@ class Rotor:
     _current_ele = 0
 
     def __init__(self, serial_port):
-        print(f"Opening Serial Port {serial_port}")
+        """ Rotor control.
+
+        Connects to an arduino that runs Easy DiSEqC: https://www.e-callisto.org/hardware/callisto-hardware.html
+        via serial port.
+        Checks boundaries of azimuth and elevation and keeps track of current position of the rotor.
+
+        Args:
+            serial_port (str): arduino serial port 
+        """
+        print(f"opening Serial Port {serial_port}")
 
         try:
             self._rotor_port = serial.Serial(
@@ -26,15 +35,23 @@ class Rotor:
                 parity   = serial.PARITY_NONE,
                 timeout  = 2)
         except IOError:
-            print ("Problem communication with tracker. Check COM-port and cables/connectors!")
+            print ("Problem communication with tracker. Check serial port and cables/connectors!")
             exit(0)
         #endtry
         time.sleep(2) # wait for arduino to be initialized
-        self._send_command("-h")
+        self._send_command("-h") # Send command that does nothing to arduino, because it behaves weird if we start changing settings right away
         self._send_command(f"max{self.MaxRange_azi}") # TODO: what if max range ele is smaller / bigger than azi ?
     #enddef
 
     def goto_azimuth(self, azi):
+        """ turn rotor to a specific azimuth angle
+
+        Args:
+            azi (float): destination azimuth
+
+        Raises:
+            RotorDegreeOutOfRange: rotor can not reach desired azimuth
+        """
         if self._can_move_azimuth(azi):
             cmd = "azi{:6.2f}".format(azi)
             self._send_command(cmd)
@@ -46,6 +63,11 @@ class Rotor:
     #enddef
 
     def step_azimuth(self, step=1):
+        """ setp azimuth by specific amount of degrees
+
+        Args:
+            step (float, optional): degrees plus or minus to step the rotor by. Defaults to 1.
+        """
         new_azi = self._current_azi+step
         self.goto_azimuth(new_azi)
     #enddef
@@ -55,6 +77,14 @@ class Rotor:
     #enddef
 
     def _can_move_azimuth(self, new_azi):
+        """checks if the new azimuth is accessible
+
+        Args:
+            new_azi (float): destination azimuth
+
+        Returns:
+            bool: True if azimuth can be accessed, False if not
+        """
         if abs(new_azi) < self.MaxRange_azi:
             return True
         else:
@@ -63,6 +93,14 @@ class Rotor:
     #enddef
 
     def goto_elevation(self, ele):
+        """ turn rotor to a specific elevation angle
+
+        Args:
+            azi (float): destination elevation
+
+        Raises:
+            RotorDegreeOutOfRange: rotor can not reach desired elevation
+        """
         if self._can_move_elevation(ele):
             cmd = "ele{:6.2f}".format(ele)
             self._send_command(cmd)
@@ -73,6 +111,11 @@ class Rotor:
     #enddef
 
     def step_elevation(self, step=1):
+        """ setp elevation by specific amount of degrees
+
+        Args:
+            step (float, optional): degrees plus or minus to step the rotor by. Defaults to 1.
+        """
         new_ele = self._current_ele+step
         self.goto_elevation(new_ele)
     #enddef
@@ -82,6 +125,14 @@ class Rotor:
     #enddef
 
     def _can_move_elevation(self, new_ele):
+        """checks if the new elevation is accessible
+
+        Args:
+            new_azi (float): destination elevation
+
+        Returns:
+            bool: True if elevation can be accessed, False if not
+        """
         if abs(new_azi) < self.MaxRange_ele:
             return True
         else:
@@ -90,6 +141,12 @@ class Rotor:
     #enddef
 
     def _send_command(self, cmd):
+        """send command to the arduino via serial connection.
+        Adds newline, so cmd should just be a command string without newlines
+
+        Args:
+            cmd (str): command string to send
+        """
         cmd = f"{cmd}\n"
         #print(f"{cmd}")
         try:

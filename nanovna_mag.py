@@ -59,11 +59,11 @@ class nanovna_mag(FileSystemEventHandler):
         self._proc = subprocess.Popen(["python3", "./nanovna-saver/nanovna-saver.py", "-o", self.ts_folder, "-f", str(freq * 1000000), "-t", str((freq * 1000000) + 1000), "-i"], 
                                       stdout=subprocess.DEVNULL)
         self._continue_event = threading.Event()
+    #enddef
     
     def stop(self):
         self._proc.terminate()
     #enddef
-
 
     def on_created(self, event):
         #print("on_created", event.src_path)
@@ -100,12 +100,6 @@ class nanovna_mag(FileSystemEventHandler):
         print(f"{az} {avg}")
         self.antenna_diagram.append([az, avg])
 
-        #if not self._rotor.can_move_azimuth(self._rotor_step):
-        #    print("Rotor at end, stopping")
-        #    self._continue_event.set()
-        #else:
-        #    self._rotor.step_azimuth(self._rotor_step)
-        #endif
         try:
             self._rotor.step_azimuth(self._rotor_step)
         except RotorDegreeOutOfRange:
@@ -116,45 +110,5 @@ class nanovna_mag(FileSystemEventHandler):
 
     def wait_for_continue(self):
         self._continue_event.wait()
-    #enddef
-
-    def _meas(self):
-        # run nano-vna saver to obtain measurements in a file which is then rea dback to calculate the average magnitude
-        # ugly hack to call nanovna-saver with args, could be done with subprocess instead
-        # WONTFIX: proper way would be to use nanovna-saver modules here and skip the os / file step
-        #          but as this is just a quick hack and /tmp is mounted in RAM this is not a prob.
-        #os.system(f"python3 ./nanovna-saver/nanovna-saver.py -o {self.ts_folder} -f 145000000 -t 145001000 > /dev/null")
-        subprocess.run(["python3", "./nanovna-saver/nanovna-saver.py", "-o", self.ts_folder, "-f", "145000000", "-t", "145001000"])
-        onlyfiles = [f for f in listdir(self.ts_folder) if isfile(join(self.ts_folder, f))]
-        if len(onlyfiles) != 1:
-            print("ERROR: Too many files")
-            exit(0)
-        #endif
-        ts_file=self.ts_folder+"/"+onlyfiles[0]
-        print(f"{ts_file}")
-
-        mag_array = []
-
-        # read touchstone file and calculate magnitude of S21 for all sweep points
-        with open(ts_file, newline='') as csvfile:
-            reader = csv.reader(csvfile, delimiter=' ')
-            for row in reader:
-                if row[0] != '#':
-                    mag = math.sqrt(math.pow(float(row[4]), 2) + math.pow(float(row[5]), 2))
-                    mag_array.append(mag)
-            #endfor
-        #endwith
-
-        # delete touchstone file
-        os.remove(ts_file)
-
-        # calculate average magnitude -> we want one value for one step
-        avg = 0
-        for i in mag_array:
-            avg = avg + i
-        avg = avg / len(mag_array)
-
-        print(f"avg = {avg}")
-        return avg
     #enddef
 #endclass
