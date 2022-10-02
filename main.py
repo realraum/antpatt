@@ -57,8 +57,6 @@ def main():
     print(f"frequency: {frequency}")
     print(f"rotor_serial_port: {rotor_serial_port}")
 
-    exit(0)
-
     # init rotor
     my_rotor = Rotor(rotor_serial_port)
 
